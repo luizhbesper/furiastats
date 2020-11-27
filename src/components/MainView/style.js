@@ -21,6 +21,7 @@ export const Container = styled.div`
             font-size: 40px;
             font-weight: 200;
             letter-spacing: 10px;
+            text-align: center;
         }
     }
 

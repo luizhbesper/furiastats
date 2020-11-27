@@ -1,51 +1,40 @@
-import React, {useEffect, useState} from 'react'
+import React, {useCallback, useState} from 'react'
 import {Container} from './style'
-import axios from 'axios'
+import {useNextGame} from '../../api'
 
 export default function GamePanel() {
-    const [game, setGame] = useState();
-    const [logo1, setLogo1] = useState(null);
-    const [logo2, setLogo2] = useState(null);
+    const gameInfo = useNextGame();
+    const [countdown, setCountdown] = useState(new Date)
 
-    useEffect(() => {
-        axios
-        .get('http://localhost:3300/nextmatch')
-        .then(response => setGame(response.data))
-        
-        axios.get('http://localhost:3300/nextmatch/team1Logo', { responseType: 'arraybuffer' })
-        .then(response => {
-            let blob = new Blob(
-                [response.data], 
-                { type: response.headers['content-type'] }
-            )
-            let image = URL.createObjectURL(blob)
-            setLogo1(image)
-        })
-        
-        axios.get('http://localhost:3300/nextmatch/team2Logo', { responseType: 'arraybuffer' })
-        .then(response => {
-            let blob = new Blob(
-                [response.data], 
-                { type: response.headers['content-type'] }
-            )
-            let image = URL.createObjectURL(blob)
-            setLogo2(image)
-        })
-
-    }, [])
+    const dateFormatter = useCallback((full) => {
+        const date = new Date(gameInfo.game.timestampMatch * 1000)
+        return  (date.getDate() ) + "/" + 
+                ((date.getMonth() + 1)) + "/" + 
+                date.getFullYear() + ' - ' +
+                date.getHours() + ':' +
+                date.getMinutes() + ':' +
+                (date.getUTCSeconds() < 10 ? '0' + date.getUTCSeconds() : date.getUTCSeconds());
+    }, [gameInfo.game.timestampMatch])
 
     return (
         <Container>
             <div className = "superior">
                 <div className = "team">
-                    <img src = {logo1 ? logo1 : ''} alt = "furia logo" />
+                    <img src = {gameInfo.logo1 ? gameInfo.logo1 : ''} alt = "furia logo" />
                     <span>{"Furia"}</span>
                 </div>
                 <span className = "vs">vs</span>
                 <div className = "team">
-                    <span>{game ? game.opponentTeam : ''}</span>
-                    <img src = {logo2 ? logo2 : ''} alt = "furia logo" />
+                    <span>{gameInfo.game ? gameInfo.game.opponentTeam : ''}</span>
+                    <img src = {gameInfo.logo2 ? gameInfo.logo2 : ''} alt = "furia logo" />
                 </div>
+            </div>
+            <div className = "inferior">
+                <div>
+                <span className  ="tournament">{gameInfo.game.tournament}</span>
+                <span className  ="date">{dateFormatter(true) + ' BRT'}</span>
+                </div>
+                <span className = "countdown"></span>
             </div>
         </Container>
     )
